@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Countdown New Year 2026</title>
+<title>Countdown New Year 2027</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -90,7 +90,7 @@ h1 {
 <body>
 
 <div class="container" id="app">
-    <h1>🎆 Happy New Year 2026 🎆</h1>
+    <h1>🎆 Happy New Year 2027 🎆</h1>
     <div class="subtitle">นับถอยหลังสู่ปีใหม่</div>
 
     <div class="countdown">
@@ -116,25 +116,62 @@ h1 {
 <button class="fullscreen-btn" id="fs">⛶ เต็มจอ</button>
 
 <script>
-const target = new Date("2026-01-01T00:00:00").getTime();
+/* ===== ตั้งเวลาเป้าหมาย ===== */
+const target = new Date("2027-01-01T00:00:00").getTime();
 
+/* ===== ระบบเสียง (Beep) ===== */
+let audioCtx;
+function playBeep(freq = 800, duration = 0.15) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = freq;
+    osc.type = "sine";
+    gain.gain.value = 0.2;
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+let lastSecond = null;
+
+/* ===== Countdown ===== */
 setInterval(() => {
     const now = new Date().getTime();
     const diff = target - now;
 
     if (diff <= 0) {
         document.getElementById("app").innerHTML =
-            "<h1>🎉 Happy New Year 2026 🎉</h1><div class='subtitle'>ขอให้ปีนี้มีแต่ความสุข ✨</div>";
+            "<h1>🎉 Happy New Year 2027 🎉</h1><div class='subtitle'>ขอให้มีความสุขตลอดปี ✨</div>";
+        playBeep(1200, 0.5);
         return;
     }
 
-    document.getElementById("d").innerText = Math.floor(diff / 86400000);
-    document.getElementById("h").innerText = Math.floor(diff % 86400000 / 3600000);
-    document.getElementById("m").innerText = Math.floor(diff % 3600000 / 60000);
-    document.getElementById("s").innerText = Math.floor(diff % 60000 / 1000);
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(diff % 86400000 / 3600000);
+    const minutes = Math.floor(diff % 3600000 / 60000);
+    const seconds = Math.floor(diff % 60000 / 1000);
+
+    document.getElementById("d").innerText = days;
+    document.getElementById("h").innerText = hours;
+    document.getElementById("m").innerText = minutes;
+    document.getElementById("s").innerText = seconds;
+
+    /* 🔊 เสียงนับถอยหลัง 10 วิสุดท้าย */
+    if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10) {
+        if (seconds !== lastSecond) {
+            playBeep(seconds <= 3 ? 1200 : 800);
+            lastSecond = seconds;
+        }
+    }
+
 }, 1000);
 
-/* Fullscreen */
+/* ===== Fullscreen ===== */
 document.getElementById("fs").onclick = () => {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
